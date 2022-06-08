@@ -21,33 +21,33 @@ add_action( 'wp_ajax_nopriv_my_action', 'my_action' );
 
 
 function my_action() {
-	global $wpdb; // this is how you get access to the database
+
 
 	$user_id = intval( $_POST['user_id'] );
     $post_id = intval( $_POST['post_id'] );
-    $data = array(
-        $post_id => array(
-            1 => $_POST['data']
-        )
-        );
-    update_user_meta($user_id, 'array',  $data);
+	$data = get_user_meta($user_id, 'array');
+
+	$data[$post_id] = $_POST['data'];
+   update_user_meta($user_id, 'array',  $data);
+
 
     
        
 
 	wp_die(); // this is required to terminate immediately and return a proper response
 }
-add_action( 'wp_footer', 'my_action_javascript' ); // Write our JS below here
+
 
 if(!function_exists('get_post_id')){
     function get_post_id() {
         global $post;
+	
         $deps = array('jquery');
         $version= '1.0'; 
         $in_footer = true;
         wp_enqueue_script('wp-media-track', plugins_url( '/js/wp-media-track.js', __FILE__ ), array('jquery'), '', true);
         wp_localize_script('wp-media-track', 'my_script_vars', array(
-                'postID' => $post->ID,
+                'post_id' => $post->ID,
                 'user_id' => get_current_user_id(),
                 'meta' => get_user_meta( get_current_user_id(), 'array' )
         )
@@ -57,6 +57,17 @@ if(!function_exists('get_post_id')){
     }
 }
 add_action('wp_enqueue_scripts', 'get_post_id');
+
+
+function get_user_data(){
+	     global $post;
+	$data = array(
+                'post_id' => $post->ID,
+                'user_id' => get_current_user_id(),
+                'meta' => get_user_meta(get_current_user_id(), 'array' )
+		 );
+		wp_die(); // this is required to terminate immediately and return a proper response
+}
 
 
 
